@@ -21,20 +21,24 @@ func main() {
 }
 
 func processAirspace(args []string) {
-
+	result, err := RESTGet("/airspaces")
+	if err != nil {
+		fmt.Printf("error occured in request: %s\n", err.Error())
+		return
+	}
+	fmt.Println(result)
 }
 
-func RESTGet() (string, error) {
-	resp, err := http.Get(fmt.Sprintf("%s/airspaces", os.Getenv("CAPTAIN_URL")))
+func RESTGet(path string) (string, error) {
+	uri := fmt.Sprintf("%s%s", os.Getenv("CAPTAIN_URL"), path)
+	resp, err := http.Get(uri)
 	if err != nil {
-		fmt.Printf("Unable to connect to Captain cluster at %s", os.Getenv("CAPTAIN_URL"))
-		return
+		return "", fmt.Errorf("unable to perform REST action against %s: %w", path, err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Unable to read server response.")
-		return
+		return "", fmt.Errorf("unable to read server response: %w", err)
 	}
-	fmt.Println(string(body))
+	return string(body), nil
 }

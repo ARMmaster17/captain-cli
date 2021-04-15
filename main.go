@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -13,20 +14,43 @@ func main() {
 		fmt.Println("Invalid parameter count")
 		// TODO: print help text.
 	}
-	section := os.Args[1]
-	switch section {
-	case "airspace":
-		processAirspace(os.Args)
+
+	switch os.Args[1] {
+	case "status":
+		processStatusResource()
+	default:
+		PrintArray(os.Args)
 	}
 }
 
-func processAirspace(args []string) {
-	result, err := RESTGet("/airspaces")
-	if err != nil {
-		fmt.Printf("error occured in request: %s\n", err.Error())
-		return
+func processStatusResource() {
+	if(len(os.Args) == 3) {
+		// Get the status of all of resource
+		result, err := RESTGet(fmt.Sprintf("/%ss", os.Args[2]))
+		if err != nil {
+			fmt.Printf("unable to print %s info: %s\n", os.Args[2], err.Error())
+			return
+		} else {
+			fmt.Println(result)
+		}
+	} else {
+		id, err := strconv.Atoi(os.Args[3])
+		if err != nil {
+			fmt.Printf("%s is not a valid ID format", os.Args[3])
+			return
+		}
+		result, err := RESTGet(fmt.Sprintf("/%s/%d", os.Args[2], id))
+		if err != nil {
+			fmt.Printf("unable to print %s info: %s\n", os.Args[2], err.Error())
+		}
+		fmt.Println(result)
 	}
-	fmt.Println(result)
+}
+
+func PrintArray(args []string) {
+	for i := 0; i < len(args); i++ {
+		fmt.Printf("'%s'\n", args[i])
+	}
 }
 
 func RESTGet(path string) (string, error) {

@@ -18,9 +18,15 @@ func main() {
 	switch os.Args[1] {
 	case "status":
 		processStatusResource()
+	case "commit":
+		processCommitResource()
 	default:
 		PrintArray(os.Args)
 	}
+}
+
+func processCommitResource() {
+
 }
 
 func processStatusResource() {

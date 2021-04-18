@@ -26,7 +26,13 @@ func main() {
 }
 
 func processCommitResource() {
-
+	// Each resource type is going to need it's own logic.
+	var payload string
+	url := fmt.Sprintf("/%s", os.Args[2])
+	switch os.Args[2] {
+	case "airspace":
+		
+	}
 }
 
 func processStatusResource() {

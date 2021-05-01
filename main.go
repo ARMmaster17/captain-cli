@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	_ "flag"
 	"fmt"
 	"io/ioutil"
@@ -18,8 +20,10 @@ func main() {
 	switch os.Args[1] {
 	case "status":
 		processStatusResource()
+		break
 	case "commit":
 		processCommitResource()
+		break
 	default:
 		PrintArray(os.Args)
 	}
@@ -27,16 +31,22 @@ func main() {
 
 func processCommitResource() {
 	// Each resource type is going to need it's own logic.
-	var payload string
 	url := fmt.Sprintf("/%s", os.Args[2])
 	switch os.Args[2] {
-	case "airspace":
-		
+	case "formation":
+		resp, err := RESTPost(fmt.Sprintf("%s/%s", url, os.Args[3]), map[string]string{
+			"TargetCount": os.Args[4],
+		})
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(resp)
+		break
 	}
 }
 
 func processStatusResource() {
-	if(len(os.Args) == 3) {
+	if len(os.Args) == 3 {
 		// Get the status of all of resource
 		result, err := RESTGet(fmt.Sprintf("/%ss", os.Args[2]))
 		if err != nil {
@@ -75,6 +85,26 @@ func RESTGet(path string) (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("unable to read server response: %w", err)
+	}
+	return string(body), nil
+}
+
+func RESTPost(path string, payload map[string]string) (string, error) {
+	uri := fmt.Sprintf("%s%s", os.Getenv("CAPTAIN_URL"), path)
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.Post(uri, "application/json", bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(resp.StatusCode)
+	fmt.Println(uri)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
 	}
 	return string(body), nil
 }

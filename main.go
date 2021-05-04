@@ -34,7 +34,7 @@ func processCommitResource() {
 	url := fmt.Sprintf("/%s", os.Args[2])
 	switch os.Args[2] {
 	case "formation":
-		resp, err := RESTPost(fmt.Sprintf("%s/%s", url, os.Args[3]), map[string]string{
+		resp, err := RESTPut(fmt.Sprintf("%s/%s", url, os.Args[3]), map[string]string{
 			"TargetCount": os.Args[4],
 		})
 		if err != nil {
@@ -96,6 +96,31 @@ func RESTPost(path string, payload map[string]string) (string, error) {
 		return "", err
 	}
 	resp, err := http.Post(uri, "application/json", bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(resp.StatusCode)
+	fmt.Println(uri)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
+func RESTPut(path string, payload map[string]string) (string, error) {
+	uri := fmt.Sprintf("%s%s", os.Getenv("CAPTAIN_URL"), path)
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("PUT", uri, bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	c := http.Client{}
+	resp, err := c.Do(req)
 	if err != nil {
 		return "", err
 	}
